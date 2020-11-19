@@ -127,5 +127,40 @@ namespace SocketServer
                 }, socketClientId);
             }
         }
+
+        /// <summary>
+        /// 向指定客户端发送消息
+        /// </summary>
+        private void btnSendToClient_Click(object sender, EventArgs e)
+        {
+            string msg = txtMsg.Text;
+            string clientId = txtClientId.Text;
+
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    MsgContent content = new MsgContent();
+                    content.Content = msg;
+
+                    _socketServerHelper.Send(content, clientId, (result) =>
+                    {
+                        if (result.success)
+                        {
+                            Log("客户端" + clientId + "发来成功反馈");
+                        }
+                        else
+                        {
+                            Log("客户端" + clientId + "发来失败反馈，失败消息：" + result.errorMsg);
+                        }
+                    });
+                    Log("向客户端" + clientId + "发送消息");
+                }
+                catch (Exception ex)
+                {
+                    Log(ex.Message);
+                }
+            });
+        }
     }
 }

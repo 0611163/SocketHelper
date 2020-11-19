@@ -32,11 +32,14 @@
             this.txtLog = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.txtMsg = new System.Windows.Forms.TextBox();
+            this.btnSendToClient = new System.Windows.Forms.Button();
+            this.txtClientId = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 12);
+            this.button1.Location = new System.Drawing.Point(14, 70);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(98, 23);
             this.button1.TabIndex = 0;
@@ -56,7 +59,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 42);
+            this.label1.Location = new System.Drawing.Point(12, 12);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(65, 12);
             this.label1.TabIndex = 5;
@@ -64,17 +67,46 @@
             // 
             // txtMsg
             // 
-            this.txtMsg.Location = new System.Drawing.Point(12, 57);
+            this.txtMsg.Location = new System.Drawing.Point(12, 27);
             this.txtMsg.Name = "txtMsg";
             this.txtMsg.Size = new System.Drawing.Size(100, 21);
             this.txtMsg.TabIndex = 6;
             this.txtMsg.Text = "测试消息ABC";
+            // 
+            // btnSendToClient
+            // 
+            this.btnSendToClient.Location = new System.Drawing.Point(14, 114);
+            this.btnSendToClient.Name = "btnSendToClient";
+            this.btnSendToClient.Size = new System.Drawing.Size(98, 23);
+            this.btnSendToClient.TabIndex = 7;
+            this.btnSendToClient.Text = "定向发送";
+            this.btnSendToClient.UseVisualStyleBackColor = true;
+            this.btnSendToClient.Click += new System.EventHandler(this.btnSendToClient_Click);
+            // 
+            // txtClientId
+            // 
+            this.txtClientId.Location = new System.Drawing.Point(14, 165);
+            this.txtClientId.Name = "txtClientId";
+            this.txtClientId.Size = new System.Drawing.Size(100, 21);
+            this.txtClientId.TabIndex = 8;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(13, 150);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 9;
+            this.label2.Text = "客户端ID";
             // 
             // FrmSocketServer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(613, 532);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtClientId);
+            this.Controls.Add(this.btnSendToClient);
             this.Controls.Add(this.txtMsg);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtLog);
@@ -94,6 +126,9 @@
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtMsg;
+        private System.Windows.Forms.Button btnSendToClient;
+        private System.Windows.Forms.TextBox txtClientId;
+        private System.Windows.Forms.Label label2;
     }
 }
 

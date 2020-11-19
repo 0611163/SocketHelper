@@ -34,11 +34,12 @@
             this.txtMsg = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtSocketClientId = new System.Windows.Forms.TextBox();
+            this.btnConnect = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(10, 122);
+            this.button1.Location = new System.Drawing.Point(10, 157);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(98, 23);
             this.button1.TabIndex = 0;
@@ -88,11 +89,22 @@
             this.txtSocketClientId.Size = new System.Drawing.Size(100, 21);
             this.txtSocketClientId.TabIndex = 8;
             // 
+            // btnConnect
+            // 
+            this.btnConnect.Location = new System.Drawing.Point(10, 115);
+            this.btnConnect.Name = "btnConnect";
+            this.btnConnect.Size = new System.Drawing.Size(98, 23);
+            this.btnConnect.TabIndex = 9;
+            this.btnConnect.Text = "连接服务端";
+            this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
+            // 
             // FrmSocketClient
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(613, 532);
+            this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.txtSocketClientId);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtMsg);
@@ -116,6 +128,7 @@
         private System.Windows.Forms.TextBox txtMsg;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtSocketClientId;
+        private System.Windows.Forms.Button btnConnect;
     }
 }
 
