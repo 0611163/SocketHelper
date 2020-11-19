@@ -151,20 +151,23 @@ namespace SocketUtil
         {
             try
             {
+                DateTime now = DateTime.Now;
+                string strTemp;
+
                 foreach (ClientSocket clientSkt in clientSocketList.Keys.ToArray())
                 {
                     Socket skt = clientSkt.Socket;
-                    ClientSocket temp;
-                    string strTemp;
 
-                    DateTime now = DateTime.Now;
-                    if (now.Subtract(clientSkt.LastHeartbeat).TotalSeconds > 60)
+                    if (now.Subtract(clientSkt.LastHeartbeat).TotalSeconds > 15)
                     {
                         clientSocketList.TryRemove(clientSkt, out strTemp);
                         if (clientSkt.SocketClientId != null && SocketClientOfflineEvent != null)
                         {
                             SocketClientOfflineEventArgs socketClientOfflineEventArgs = new SocketClientOfflineEventArgs(clientSkt.SocketClientId);
-                            SocketClientOfflineEvent(null, socketClientOfflineEventArgs);
+                            ThreadHelper.Run(() =>
+                            {
+                                SocketClientOfflineEvent(null, socketClientOfflineEventArgs);
+                            });
                         }
                         LogUtil.Log("客户端已失去连接，当前客户端数：" + clientSocketList.Count);
                         ActionUtil.TryDoAction(() => { if (skt.Connected) skt.Disconnect(false); });

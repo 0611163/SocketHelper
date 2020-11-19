@@ -157,7 +157,7 @@ namespace SocketUtil
             try
             {
                 DateTime now = DateTime.Now;
-                if (now.Subtract(_lastHeartbeat).TotalSeconds > 60)
+                if (now.Subtract(_lastHeartbeat).TotalSeconds > 15)
                 {
                     LogUtil.Log("服务端已失去连接");
                     try
