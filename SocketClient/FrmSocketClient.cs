@@ -141,7 +141,17 @@ namespace SocketClient
                     data.Type = SocketDataType.消息数据;
                     data.Content = content;
 
-                    _socketClientHelper.Send(data);
+                    _socketClientHelper.Send(data, (result) =>
+                    {
+                        if (result.success)
+                        {
+                            Log("服务端发来成功反馈");
+                        }
+                        else
+                        {
+                            Log("服务端发来失败反馈，失败消息：" + result.errorMsg);
+                        }
+                    });
                     Log("向服务端发送消息");
                 }
                 catch (Exception ex)

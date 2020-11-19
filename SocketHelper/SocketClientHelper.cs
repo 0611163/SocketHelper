@@ -39,6 +39,21 @@ namespace SocketUtil
             get { return _clientId; }
         }
 
+        public int _CallbackTimeout = 20;
+        /// <summary>
+        /// 等待回调超时时间(单位：秒)
+        /// </summary>
+        public int CallbackTimeout
+        {
+            get { return _CallbackTimeout; }
+            set { value = _CallbackTimeout; }
+        }
+
+        /// <summary>
+        /// 服务端操作结果回调
+        /// </summary>
+        private ConcurrentDictionary<string, SocketResult> _callbackDict = new ConcurrentDictionary<string, SocketResult>();
+
         #endregion
 
         #region SocketClientHelper 构造函数
@@ -436,6 +451,8 @@ namespace SocketUtil
 
                 if (data.Type == SocketDataType.返回值 && ReceivedSocketResultEvent != null) //收到返回值包
                 {
+                    _callbackDict.TryAdd(data.SocketResult.callbackId, data.SocketResult);
+
                     ReceivedSocketResultEvent(null, new ReceivedSocketResultEventArgs(data.SocketResult));
                 }
             }
@@ -567,9 +584,14 @@ namespace SocketUtil
         /// <summary>
         /// Send
         /// </summary>
-        public void Send(SocketData data)
+        public void Send(SocketData data, Action<SocketResult> callback = null)
         {
             Send(clientSocket, data);
+
+            if (callback != null)
+            {
+                WaitCallback(data.Content.CallbackId, callback);
+            }
         }
 
         /// <summary>
@@ -625,6 +647,48 @@ namespace SocketUtil
             {
                 SocketHelper.Send(socket, byteList.ToArray()); //发送
             }
+        }
+        #endregion
+
+        #region 等待回调
+        /// <summary>
+        /// 等待回调
+        /// </summary>
+        private void WaitCallback(string callbackId, Action<SocketResult> callback = null)
+        {
+            DateTime dt = DateTime.Now.AddSeconds(_CallbackTimeout);
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.AutoReset = false;
+            timer.Interval = 100;
+            timer.Elapsed += (s, e) =>
+            {
+                try
+                {
+                    SocketResult socketResult;
+                    if (!_callbackDict.TryGetValue(callbackId, out socketResult) && DateTime.Now < dt)
+                    {
+                        timer.Start();
+                        return;
+                    }
+                    SocketResult sktResult;
+                    _callbackDict.TryRemove(callbackId, out sktResult);
+                    if (socketResult == null)
+                    {
+                        socketResult = new SocketResult();
+                        socketResult.success = false;
+                        socketResult.errorMsg = "超时";
+                    }
+
+                    if (callback != null) callback(socketResult);
+
+                    timer.Close();
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.Error("WaitCallback error" + ex);
+                }
+            };
+            timer.Start();
         }
         #endregion
 
