@@ -21,6 +21,9 @@ namespace SocketUtil
             set { _SocketClientId = value; }
         }
 
+        /// <summary>
+        /// Socket客户端注册事件参数
+        /// </summary>
         public SocketClientRegisterEventArgs(string socketClientId)
         {
             _SocketClientId = socketClientId;

@@ -18,6 +18,11 @@ namespace SocketUtil
         public static readonly string HeaderString = "0XFF";
 
         /// <summary>
+        /// Socket包头
+        /// </summary>
+        public static readonly byte[] HeaderBytes = Encoding.ASCII.GetBytes(SocketData.HeaderString);
+
+        /// <summary>
         /// 类型 1心跳 2心跳应答 3注册包 4注册反馈 5消息数据 6返回值
         /// </summary>
         public SocketDataType Type { get; set; }

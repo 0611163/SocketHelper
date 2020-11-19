@@ -43,6 +43,22 @@ namespace SocketUtil
         }
         #endregion
 
+        #region 数组复制
+        /// <summary>
+        /// 数组复制
+        /// </summary>
+        public static void CopyTo(byte[] bArrSource, byte[] bArrTarget, int sourceIndex, int targetIndex, int length)
+        {
+            for (int i = 0; i < length; i++)
+            {
+                if (targetIndex + i < bArrTarget.Length && sourceIndex + i < bArrSource.Length)
+                {
+                    bArrTarget[targetIndex + i] = bArrSource[sourceIndex + i];
+                }
+            }
+        }
+        #endregion
+
         #region 数组追加
         /// <summary>
         /// 数组追加
