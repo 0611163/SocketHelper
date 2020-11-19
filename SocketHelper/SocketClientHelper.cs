@@ -126,6 +126,7 @@ namespace SocketUtil
                     catch (Exception ex)
                     {
                         LogUtil.Error(ex);
+                        return false;
                     }
 
                     //检测服务端
@@ -181,7 +182,11 @@ namespace SocketUtil
                     {
                         Thread.Sleep(3000);
                     }
-                    RegisterToServer(_clientId); //重新注册
+                    tryCount = 0;
+                    while (!RegisterToServer(_clientId) && tryCount++ < 10000) //重新注册
+                    {
+                        Thread.Sleep(3000);
+                    }
                 }
             }
             catch (Exception ex)
@@ -245,24 +250,24 @@ namespace SocketUtil
             heartbeatTimer.Interval = 10000;
             heartbeatTimer.Elapsed += new System.Timers.ElapsedEventHandler((obj, eea) =>
             {
-                lock (_lockSend)
+                try
                 {
-                    try
+                    byte[] bArr = new byte[5];
+                    byte[] bArrHeader = SocketData.HeaderBytes;
+                    ByteUtil.CopyTo(bArrHeader, bArr, 0, 0, bArrHeader.Length);
+                    bArr[4] = (byte)SocketDataType.心跳;
+                    lock (_lockSend)
                     {
-                        List<byte> byteList = new List<byte>();
-                        byte[] bArrHeader = Encoding.ASCII.GetBytes(SocketData.HeaderString);
-                        ByteUtil.Append(ref byteList, bArrHeader);
-                        ByteUtil.Append(ref byteList, new byte[] { (byte)SocketDataType.心跳 });
-                        SocketHelper.Send(clientSocket, byteList.ToArray());
+                        SocketHelper.Send(clientSocket, bArr);
                     }
-                    catch (Exception ex)
-                    {
-                        LogUtil.Error("向服务器发送心跳包出错：" + ex.Message);
-                    }
-                    finally
-                    {
-                        heartbeatTimer.Start();
-                    }
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.Error("向服务器发送心跳包出错：" + ex.Message);
+                }
+                finally
+                {
+                    heartbeatTimer.Start();
                 }
             });
             heartbeatTimer.Start();
@@ -307,7 +312,7 @@ namespace SocketUtil
         {
             try
             {
-                CopyTo(e.Buffer, _buffer, 0, e.BytesTransferred);
+                ByteUtil.CopyTo(e.Buffer, _buffer, 0, e.BytesTransferred);
 
                 #region 校验数据
                 if (_buffer.Count < 4)
@@ -321,7 +326,7 @@ namespace SocketUtil
                 else
                 {
                     byte[] bArrHeader = new byte[4];
-                    CopyTo(_buffer, bArrHeader, 0, 0, bArrHeader.Length);
+                    ByteUtil.CopyTo(_buffer, bArrHeader, 0, 0, bArrHeader.Length);
                     string strHeader = Encoding.ASCII.GetString(bArrHeader);
                     if (strHeader.ToUpper() == SocketData.HeaderString)
                     {
@@ -336,7 +341,7 @@ namespace SocketUtil
                         else
                         {
                             byte[] bArrType = new byte[1];
-                            CopyTo(_buffer, bArrType, 4, 0, bArrType.Length);
+                            ByteUtil.CopyTo(_buffer, bArrType, 4, 0, bArrType.Length);
                             if (bArrType[0] == (byte)SocketDataType.心跳应答 || bArrType[0] == (byte)SocketDataType.注册反馈) { } //心跳应答包、注册反馈包
                             else if (bArrType[0] == (byte)SocketDataType.消息数据 || bArrType[0] == (byte)SocketDataType.返回值) //消息包、返回值包
                             {
@@ -351,7 +356,7 @@ namespace SocketUtil
                                 else
                                 {
                                     byte[] bArrLength = new byte[4];
-                                    CopyTo(_buffer, bArrLength, 5, 0, bArrLength.Length);
+                                    ByteUtil.CopyTo(_buffer, bArrLength, 5, 0, bArrLength.Length);
                                     int dataLength = BitConverter.ToInt32(bArrLength, 0);
                                     if (dataLength == 0 || _buffer.Count < dataLength + 9)
                                     {
@@ -437,14 +442,7 @@ namespace SocketUtil
                         args.Callback = new CallbackSocket(socket);
                         ThreadHelper.Run((obj) =>
                         {
-                            try
-                            {
-                                SocketReceivedEvent(this, obj as SocketReceivedEventArgs);
-                            }
-                            catch (Exception ex)
-                            {
-                                LogUtil.Error(ex);
-                            }
+                            SocketReceivedEvent(this, obj as SocketReceivedEventArgs);
                         }, args);
                     }
                 }
@@ -453,7 +451,10 @@ namespace SocketUtil
                 {
                     _callbackDict.TryAdd(data.SocketResult.callbackId, data.SocketResult);
 
-                    ReceivedSocketResultEvent(null, new ReceivedSocketResultEventArgs(data.SocketResult));
+                    ThreadHelper.Run(() =>
+                    {
+                        ReceivedSocketResultEvent(null, new ReceivedSocketResultEventArgs(data.SocketResult));
+                    });
                 }
             }
             return data;
@@ -473,48 +474,42 @@ namespace SocketUtil
             {
                 if (buffer.Count < 4) return null;
                 byte[] bArrHeader = new byte[4];
-                CopyTo(buffer, bArrHeader, 0, 0, bArrHeader.Length);
+                ByteUtil.CopyTo(buffer, bArrHeader, 0, 0, bArrHeader.Length);
                 readLength += bArrHeader.Length;
                 string strHeader = Encoding.ASCII.GetString(bArrHeader);
                 if (strHeader.ToUpper() == SocketData.HeaderString)
                 {
                     if (buffer.Count < 5) return null;
                     byte[] bArrType = new byte[1];
-                    CopyTo(buffer, bArrType, 4, 0, bArrType.Length);
+                    ByteUtil.CopyTo(buffer, bArrType, 4, 0, bArrType.Length);
                     readLength += bArrType.Length;
                     byte bType = bArrType[0];
                     socketData = new SocketData();
                     socketData.Type = (SocketDataType)bType;
 
-                    if (socketData.Type == SocketDataType.消息数据)
+                    string jsonString = null;
+                    if (socketData.Type == SocketDataType.消息数据 || socketData.Type == SocketDataType.返回值)
                     {
                         if (buffer.Count < 9) return null;
                         byte[] bArrLength = new byte[4];
-                        CopyTo(buffer, bArrLength, 5, 0, bArrLength.Length);
+                        ByteUtil.CopyTo(buffer, bArrLength, 5, 0, bArrLength.Length);
                         readLength += bArrLength.Length;
                         int dataLength = BitConverter.ToInt32(bArrLength, 0);
 
                         if (dataLength == 0 || buffer.Count < dataLength + 9) return null;
                         byte[] dataBody = new byte[dataLength];
-                        CopyTo(buffer, dataBody, 9, 0, dataBody.Length);
+                        ByteUtil.CopyTo(buffer, dataBody, 9, 0, dataBody.Length);
                         readLength += dataBody.Length;
-                        string jsonString = Encoding.UTF8.GetString(dataBody);
+                        jsonString = Encoding.UTF8.GetString(dataBody);
+                    }
+
+                    if (socketData.Type == SocketDataType.消息数据)
+                    {
                         socketData.Content = JsonConvert.DeserializeObject<MsgContent>(jsonString);
                     }
 
                     if (socketData.Type == SocketDataType.返回值)
                     {
-                        if (buffer.Count < 9) return null;
-                        byte[] bArrLength = new byte[4];
-                        CopyTo(buffer, bArrLength, 5, 0, bArrLength.Length);
-                        readLength += bArrLength.Length;
-                        int dataLength = BitConverter.ToInt32(bArrLength, 0);
-
-                        if (dataLength == 0 || buffer.Count < dataLength + 9) return null;
-                        byte[] dataBody = new byte[dataLength];
-                        CopyTo(buffer, dataBody, 9, 0, dataBody.Length);
-                        readLength += dataBody.Length;
-                        string jsonString = Encoding.UTF8.GetString(dataBody);
                         socketData.SocketResult = JsonConvert.DeserializeObject<SocketResult>(jsonString);
                     }
                 }
@@ -531,36 +526,6 @@ namespace SocketUtil
             }
 
             return socketData;
-        }
-        #endregion
-
-        #region CopyTo
-        /// <summary>
-        /// 数组复制
-        /// </summary>
-        private void CopyTo(byte[] bArrSource, List<byte> listTarget, int sourceIndex, int length)
-        {
-            for (int i = 0; i < length; i++)
-            {
-                if (sourceIndex + i < bArrSource.Length)
-                {
-                    listTarget.Add(bArrSource[sourceIndex + i]);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 数组复制
-        /// </summary>
-        private void CopyTo(List<byte> listSource, byte[] bArrTarget, int sourceIndex, int targetIndex, int length)
-        {
-            for (int i = 0; i < length; i++)
-            {
-                if (targetIndex + i < bArrTarget.Length && sourceIndex + i < listSource.Count)
-                {
-                    bArrTarget[targetIndex + i] = listSource[sourceIndex + i];
-                }
-            }
         }
         #endregion
 

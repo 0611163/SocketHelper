@@ -41,6 +41,7 @@ namespace SocketServer
                 _socketServerHelper = new SocketServerHelper(_serverPort);
                 _socketServerHelper.StartServer();
                 _socketServerHelper.SocketReceivedEvent += Received;
+                _socketServerHelper.SocketClientRegisterEvent += ClientRegistered;
                 Log("socket服务端启动成功");
             });
         }
@@ -71,6 +72,14 @@ namespace SocketServer
                     Log("错误：" + ex.Message);
                 }
             });
+        }
+
+        /// <summary>
+        /// Socket客户端注册
+        /// </summary>
+        private void ClientRegistered(object sender, SocketClientRegisterEventArgs e)
+        {
+            Log("客户端 " + e.SocketClientId + " 已连接注册");
         }
 
         #region Log
@@ -111,14 +120,14 @@ namespace SocketServer
                         {
                             if (result.success)
                             {
-                                Log("客户端" + clientId + "发来成功反馈");
+                                Log("收到客户端 " + clientId + " 成功反馈");
                             }
                             else
                             {
-                                Log("客户端" + clientId + "发来失败反馈，失败消息：" + result.errorMsg);
+                                Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.errorMsg);
                             }
                         });
-                        Log("向客户端" + clientId + "发送消息");
+                        Log("向客户端 " + clientId + " 发送消息");
                     }
                     catch (Exception ex)
                     {
@@ -147,14 +156,14 @@ namespace SocketServer
                     {
                         if (result.success)
                         {
-                            Log("客户端" + clientId + "发来成功反馈");
+                            Log("收到客户端 " + clientId + " 成功反馈");
                         }
                         else
                         {
-                            Log("客户端" + clientId + "发来失败反馈，失败消息：" + result.errorMsg);
+                            Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.errorMsg);
                         }
                     });
-                    Log("向客户端" + clientId + "发送消息");
+                    Log("向客户端 " + clientId + " 发送消息");
                 }
                 catch (Exception ex)
                 {
