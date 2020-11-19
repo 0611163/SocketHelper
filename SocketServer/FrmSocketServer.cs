@@ -31,6 +31,22 @@ namespace SocketServer
             });
         }
 
+        #region Log
+        /// <summary>
+        /// 输出日志
+        /// </summary>
+        private void Log(string log)
+        {
+            if (!this.IsDisposed)
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    txtLog.AppendText(DateTime.Now.ToString("mm:ss.fff") + " " + log + "\r\n\r\n");
+                }));
+            }
+        }
+        #endregion
+
         /// <summary>
         /// 启动Socket服务端
         /// </summary>
@@ -47,7 +63,15 @@ namespace SocketServer
         }
 
         /// <summary>
-        /// Socket数据接收
+        /// Socket客户端注册事件
+        /// </summary>
+        private void ClientRegistered(object sender, SocketClientRegisterEventArgs e)
+        {
+            Log("客户端 " + e.SocketClientId + " 已连接注册");
+        }
+
+        /// <summary>
+        /// Socket消息接收、处理、反馈
         /// </summary>
         private void Received(object sender, SocketReceivedEventArgs e)
         {
@@ -73,30 +97,6 @@ namespace SocketServer
                 }
             });
         }
-
-        /// <summary>
-        /// Socket客户端注册
-        /// </summary>
-        private void ClientRegistered(object sender, SocketClientRegisterEventArgs e)
-        {
-            Log("客户端 " + e.SocketClientId + " 已连接注册");
-        }
-
-        #region Log
-        /// <summary>
-        /// 输出日志
-        /// </summary>
-        private void Log(string log)
-        {
-            if (!this.IsDisposed)
-            {
-                this.BeginInvoke(new Action(() =>
-                {
-                    txtLog.AppendText(DateTime.Now.ToString("mm:ss.fff") + " " + log + "\r\n\r\n");
-                }));
-            }
-        }
-        #endregion
 
         /// <summary>
         /// 广播消息

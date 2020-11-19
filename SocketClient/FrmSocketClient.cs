@@ -29,6 +29,25 @@ namespace SocketClient
 
         }
 
+        #region Log
+        /// <summary>
+        /// 输出日志
+        /// </summary>
+        private void Log(string log)
+        {
+            if (!this.IsDisposed)
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    txtLog.AppendText(DateTime.Now.ToString("mm:ss.fff") + " " + log + "\r\n\r\n");
+                }));
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// 连接服务端
+        /// </summary>
         private void btnConnect_Click(object sender, EventArgs e)
         {
             btnConnect.Enabled = false;
@@ -50,10 +69,9 @@ namespace SocketClient
                     _socketClientHelper = new SocketClientHelper(_serverIP, _serverPort);
                     _socketClientHelper.ConnectServer(); //连接服务器
                     _socketClientHelper.StartHeartbeat(); //心跳
-                    _socketClientHelper.RegisterToServer(string.IsNullOrWhiteSpace(txtSocketClientId.Text) ? Guid.NewGuid().ToString("N") : txtSocketClientId.Text); //注册
+                    _socketClientHelper.RegisterToServer(string.IsNullOrWhiteSpace(txtSocketClientId.Text) ? DateTime.Now.ToString("dHHmmssf") : txtSocketClientId.Text); //注册
 
                     _socketClientHelper.SocketReceivedEvent += Received;
-                    _socketClientHelper.ReceivedSocketResultEvent += ResultReceived;
                     Log("客户端连接服务端成功");
                 }
                 catch (Exception ex)
@@ -64,7 +82,7 @@ namespace SocketClient
         }
 
         /// <summary>
-        /// Socket数据接收
+        /// Socket消息接收、处理、反馈
         /// </summary>
         private void Received(object sender, SocketReceivedEventArgs e)
         {
@@ -92,44 +110,6 @@ namespace SocketClient
         }
 
         /// <summary>
-        /// 反馈消息接收
-        /// </summary>
-        private void ResultReceived(object sender, ReceivedSocketResultEventArgs e)
-        {
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    //取数据处理
-                    if (e.SocketResult != null)
-                    {
-                        Log("收到反馈，反馈标识：" + e.SocketResult.callbackId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogUtil.Error(ex);
-                }
-            });
-        }
-
-        #region Log
-        /// <summary>
-        /// 输出日志
-        /// </summary>
-        private void Log(string log)
-        {
-            if (!this.IsDisposed)
-            {
-                this.BeginInvoke(new Action(() =>
-                {
-                    txtLog.AppendText(DateTime.Now.ToString("mm:ss.fff") + " " + log + "\r\n\r\n");
-                }));
-            }
-        }
-        #endregion
-
-        /// <summary>
         /// 向服务端发送消息
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
@@ -151,11 +131,11 @@ namespace SocketClient
                     {
                         if (result.success)
                         {
-                            Log("服务端发来成功反馈");
+                            Log("收到服务端成功反馈");
                         }
                         else
                         {
-                            Log("服务端发来失败反馈，失败消息：" + result.errorMsg);
+                            Log("收到服务端失败反馈，失败消息：" + result.errorMsg);
                         }
                     });
                     Log("向服务端发送消息");
