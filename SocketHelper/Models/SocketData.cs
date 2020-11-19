@@ -15,7 +15,7 @@ namespace SocketUtil
         /// <summary>
         /// Socket包头
         /// </summary>
-        public static string HeaderString = "0XFF";
+        public static readonly string HeaderString = "0XFF";
 
         /// <summary>
         /// 类型 1心跳 2心跳应答 3注册包 4注册反馈 5消息数据 6返回值

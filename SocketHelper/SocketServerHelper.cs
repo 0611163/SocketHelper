@@ -755,6 +755,16 @@ namespace SocketUtil
         }
         #endregion
 
+        #region 获取全部客户端ID集合
+        /// <summary>
+        /// 获取全部客户端ID集合
+        /// </summary>
+        public List<string> GetSocketClientIdListAll()
+        {
+            return _dictClientIdClientSocket.Keys.ToList();
+        }
+        #endregion
+
     }
 
 }

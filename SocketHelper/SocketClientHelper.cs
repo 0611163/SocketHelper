@@ -19,6 +19,7 @@ namespace SocketUtil
     {
         #region 变量
         private string _serverIP;
+        private string _hostName;
         private int _serverPort;
         private object _lockSend = new object();
         private Socket clientSocket;
@@ -41,10 +42,11 @@ namespace SocketUtil
         #endregion
 
         #region SocketClientHelper 构造函数
-        public SocketClientHelper(string serverIP, int serverPort)
+        public SocketClientHelper(string serverIP, int serverPort, string hostName = null)
         {
             _serverIP = serverIP;
             _serverPort = serverPort;
+            _hostName = hostName;
         }
         #endregion
 
@@ -63,19 +65,16 @@ namespace SocketUtil
                         clientSocket.Close();
                         clientSocket.Dispose();
                     }
-                    string ip = ConfigurationManager.AppSettings["ServerIP"];
-                    string hostName = ConfigurationManager.AppSettings["HostName"];
-                    int port = Convert.ToInt32(ConfigurationManager.AppSettings["ServerPort"]);
                     IPEndPoint ipep = null;
-                    if (hostName != null)
+                    if (_hostName != null)
                     {
-                        IPHostEntry host = Dns.GetHostEntry(hostName);
+                        IPHostEntry host = Dns.GetHostEntry(_hostName);
                         IPAddress ipAddr = host.AddressList[0];
-                        ipep = new IPEndPoint(ipAddr, port);
+                        ipep = new IPEndPoint(ipAddr, _serverPort);
                     }
                     else
                     {
-                        ipep = new IPEndPoint(IPAddress.Parse(ip), port);
+                        ipep = new IPEndPoint(IPAddress.Parse(_serverIP), _serverPort);
                     }
                     clientSocket = new Socket(ipep.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     clientSocket.SendTimeout = 20000;
