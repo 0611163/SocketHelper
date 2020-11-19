@@ -26,8 +26,6 @@ namespace SocketUtil
         private SocketAsyncEventArgs _socketAsyncArgs;
         public EventHandler<SocketAsyncEventArgs> _socketAsyncCompleted { get; set; }
         private System.Timers.Timer heartbeatTimer;
-        public event EventHandler<SocketReceivedEventArgs> SocketReceivedEvent;
-        public event EventHandler<ReceivedSocketResultEventArgs> ReceivedSocketResultEvent;
         private System.Timers.Timer _checkServerTimer;
         private DateTime _lastHeartbeat;
         private List<byte> _buffer = new List<byte>();
@@ -53,6 +51,16 @@ namespace SocketUtil
         /// 服务端操作结果回调
         /// </summary>
         private ConcurrentDictionary<string, SocketResult> _callbackDict = new ConcurrentDictionary<string, SocketResult>();
+
+        /// <summary>
+        /// 接收消息事件
+        /// </summary>
+        public event EventHandler<SocketReceivedEventArgs> SocketReceivedEvent;
+
+        /// <summary>
+        /// 接收反馈消息事件
+        /// </summary>
+        public event EventHandler<ReceivedSocketResultEventArgs> ReceivedSocketResultEvent;
 
         #endregion
 
