@@ -113,7 +113,7 @@
             this.Controls.Add(this.button1);
             this.Name = "FrmSocketClient";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Socket服务端";
+            this.Text = "Socket客户端";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -447,14 +447,17 @@ namespace SocketUtil
                     }
                 }
 
-                if (data.Type == SocketDataType.返回值 && ReceivedSocketResultEvent != null) //收到返回值包
+                if (data.Type == SocketDataType.返回值) //收到返回值包
                 {
                     _callbackDict.TryAdd(data.SocketResult.callbackId, data.SocketResult);
 
-                    ThreadHelper.Run(() =>
+                    if (ReceivedSocketResultEvent != null)
                     {
-                        ReceivedSocketResultEvent(null, new ReceivedSocketResultEventArgs(data.SocketResult));
-                    });
+                        ThreadHelper.Run(() =>
+                        {
+                            ReceivedSocketResultEvent(null, new ReceivedSocketResultEventArgs(data.SocketResult));
+                        });
+                    }
                 }
             }
             return data;
