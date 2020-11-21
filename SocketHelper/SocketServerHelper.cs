@@ -67,12 +67,23 @@ namespace SocketUtil
         public event EventHandler<SocketReceivedEventArgs> SocketReceivedEvent;
 
         private System.Timers.Timer _checkClientTimer;
+
+        /// <summary>
+        /// 清理数据Timer
+        /// </summary>
+        private System.Timers.Timer _clearDataTimer;
+
         #endregion
 
         #region SocketServerHelper 构造函数
         public SocketServerHelper(int serverPort)
         {
             _serverPort = serverPort;
+
+            _clearDataTimer = new System.Timers.Timer();
+            _clearDataTimer.Interval = 60;
+            _clearDataTimer.Elapsed += _clearDataTimer_Elapsed;
+            _clearDataTimer.Start();
         }
         #endregion
 
@@ -408,7 +419,11 @@ namespace SocketUtil
 
                 if (data.Type == SocketDataType.返回值) //收到返回值包
                 {
-                    if (data.SocketResult != null) clientSkt.CallbackDict.TryAdd(data.SocketResult.callbackId, data.SocketResult);
+                    if (data.SocketResult != null)
+                    {
+                        data.SocketResult.CallbackTime = DateTime.Now;
+                        clientSkt.CallbackDict.TryAdd(data.SocketResult.CallbackId, data.SocketResult);
+                    }
 
                     if (ReceivedSocketResultEvent != null)
                     {
@@ -556,7 +571,14 @@ namespace SocketUtil
             if (_checkClientTimer != null)
             {
                 _checkClientTimer.Stop();
+                _checkClientTimer.Elapsed -= CheckClient;
                 _checkClientTimer.Close();
+            }
+            if (_clearDataTimer != null)
+            {
+                _clearDataTimer.Stop();
+                _clearDataTimer.Elapsed -= _clearDataTimer_Elapsed;
+                _clearDataTimer.Close();
             }
         }
         #endregion
@@ -582,8 +604,8 @@ namespace SocketUtil
             else
             {
                 SocketResult socketResult = new SocketResult();
-                socketResult.success = false;
-                socketResult.errorMsg = "客户端不存在";
+                socketResult.Success = false;
+                socketResult.Msg = "客户端不存在";
                 return socketResult;
             }
         }
@@ -612,8 +634,8 @@ namespace SocketUtil
             else
             {
                 SocketResult socketResult = new SocketResult();
-                socketResult.success = false;
-                socketResult.errorMsg = "客户端不存在";
+                socketResult.Success = false;
+                socketResult.Msg = "客户端不存在";
                 if (callback != null) callback(socketResult);
             }
         }
@@ -642,8 +664,8 @@ namespace SocketUtil
                     if (socketResult == null)
                     {
                         socketResult = new SocketResult();
-                        socketResult.success = false;
-                        socketResult.errorMsg = "超时";
+                        socketResult.Success = false;
+                        socketResult.Msg = "超时";
                     }
 
                     if (callback != null) callback(socketResult);
@@ -674,8 +696,8 @@ namespace SocketUtil
             if (socketResult == null)
             {
                 socketResult = new SocketResult();
-                socketResult.success = false;
-                socketResult.errorMsg = "超时";
+                socketResult.Success = false;
+                socketResult.Msg = "超时";
             }
             return socketResult;
         }
@@ -734,6 +756,34 @@ namespace SocketUtil
         public List<string> GetSocketClientIdListAll()
         {
             return _dictClientIdClientSocket.Keys.ToList();
+        }
+        #endregion
+
+        #region 清理回调数据
+        /// <summary>
+        /// 清理回调数据
+        /// </summary>
+        private void _clearDataTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            ThreadHelper.Run(() =>
+            {
+                SocketResult socketResult;
+                SocketResult temp;
+
+                foreach (ClientSocket clientSocket in clientSocketList.Keys.ToArray())
+                {
+                    foreach (string key in clientSocket.CallbackDict.Keys.ToArray())
+                    {
+                        if (clientSocket.CallbackDict.TryGetValue(key, out socketResult))
+                        {
+                            if (DateTime.Now.Subtract(socketResult.CallbackTime).TotalSeconds > _CallbackTimeout * 2)
+                            {
+                                clientSocket.CallbackDict.TryRemove(key, out temp);
+                            }
+                        }
+                    }
+                }
+            });
         }
         #endregion
 

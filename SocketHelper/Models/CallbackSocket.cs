@@ -30,7 +30,7 @@ namespace SocketUtil
             SocketData data = new SocketData();
             data.Type = SocketDataType.返回值;
             data.SocketResult = socketResult;
-            socketResult.callbackId = e.Content.CallbackId;
+            socketResult.CallbackId = e.Content.CallbackId;
             socketClientHelper.Send(_socket, data);
         }
 
@@ -39,7 +39,7 @@ namespace SocketUtil
             SocketData data = new SocketData();
             data.Type = SocketDataType.返回值;
             data.SocketResult = socketResult;
-            socketResult.callbackId = e.Content.CallbackId;
+            socketResult.CallbackId = e.Content.CallbackId;
             socketServerHelper.Send(_clientSocket, data);
         }
     }

@@ -97,8 +97,8 @@ namespace SocketClient
 
                         //回调
                         SocketResult result = new SocketResult();
-                        result.success = true;
-                        result.errorMsg = "消息已成功收到";
+                        result.Success = true;
+                        result.Msg = "消息已成功收到";
                         e.Callback.SendResult(_socketClientHelper, result, e);
                     }
                 }
@@ -129,13 +129,13 @@ namespace SocketClient
 
                     _socketClientHelper.Send(data, (result) =>
                     {
-                        if (result.success)
+                        if (result.Success)
                         {
                             Log("收到服务端成功反馈");
                         }
                         else
                         {
-                            Log("收到服务端失败反馈，失败消息：" + result.errorMsg);
+                            Log("收到服务端失败反馈，失败消息：" + result.Msg);
                         }
                     });
                     Log("向服务端发送消息");

@@ -86,8 +86,8 @@ namespace SocketServer
 
                         //回调
                         SocketResult result = new SocketResult();
-                        result.success = true;
-                        result.errorMsg = "消息已成功收到";
+                        result.Success = true;
+                        result.Msg = "消息已成功收到";
                         e.Callback.SendResult(_socketServerHelper, result, e);
                     }
                 }
@@ -118,13 +118,13 @@ namespace SocketServer
 
                         _socketServerHelper.Send(content, clientId, (result) =>
                         {
-                            if (result.success)
+                            if (result.Success)
                             {
                                 Log("收到客户端 " + clientId + " 成功反馈");
                             }
                             else
                             {
-                                Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.errorMsg);
+                                Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
                             }
                         });
                         Log("向客户端 " + clientId + " 发送消息");
@@ -154,13 +154,13 @@ namespace SocketServer
 
                     _socketServerHelper.Send(content, clientId, (result) =>
                     {
-                        if (result.success)
+                        if (result.Success)
                         {
                             Log("收到客户端 " + clientId + " 成功反馈");
                         }
                         else
                         {
-                            Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.errorMsg);
+                            Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
                         }
                     });
                     Log("向客户端 " + clientId + " 发送消息");

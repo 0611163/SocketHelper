@@ -24,8 +24,8 @@ namespace SocketUtil
         private object _lockSend = new object();
         private Socket clientSocket;
         private SocketAsyncEventArgs _socketAsyncArgs;
-        public EventHandler<SocketAsyncEventArgs> _socketAsyncCompleted { get; set; }
-        private System.Timers.Timer heartbeatTimer;
+        private EventHandler<SocketAsyncEventArgs> _socketAsyncCompleted { get; set; }
+        private System.Timers.Timer _heartbeatTimer;
         private System.Timers.Timer _checkServerTimer;
         private DateTime _lastHeartbeat;
         private List<byte> _buffer = new List<byte>();
@@ -37,7 +37,7 @@ namespace SocketUtil
             get { return _clientId; }
         }
 
-        public int _CallbackTimeout = 20;
+        private int _CallbackTimeout = 20;
         /// <summary>
         /// 等待回调超时时间(单位：秒)
         /// </summary>
@@ -62,6 +62,11 @@ namespace SocketUtil
         /// </summary>
         public event EventHandler<ReceivedSocketResultEventArgs> ReceivedSocketResultEvent;
 
+        /// <summary>
+        /// 清理数据Timer
+        /// </summary>
+        private System.Timers.Timer _clearDataTimer;
+
         #endregion
 
         #region SocketClientHelper 构造函数
@@ -70,6 +75,11 @@ namespace SocketUtil
             _serverIP = serverIP;
             _serverPort = serverPort;
             _hostName = hostName;
+
+            _clearDataTimer = new System.Timers.Timer();
+            _clearDataTimer.Interval = 60;
+            _clearDataTimer.Elapsed += _clearDataTimer_Elapsed;
+            _clearDataTimer.Start();
         }
         #endregion
 
@@ -237,15 +247,23 @@ namespace SocketUtil
         /// </summary>
         public void Dispose()
         {
-            if (heartbeatTimer != null)
+            if (_heartbeatTimer != null)
             {
-                heartbeatTimer.Stop();
-                heartbeatTimer.Close();
+                _heartbeatTimer.Stop();
+                _heartbeatTimer.Elapsed -= heartbeatTimer_Elapsed;
+                _heartbeatTimer.Close();
             }
             if (_checkServerTimer != null)
             {
                 _checkServerTimer.Stop();
+                _checkServerTimer.Elapsed -= CheckServer;
                 _checkServerTimer.Close();
+            }
+            if (_clearDataTimer != null)
+            {
+                _clearDataTimer.Stop();
+                _clearDataTimer.Elapsed -= _clearDataTimer_Elapsed;
+                _clearDataTimer.Close();
             }
         }
         #endregion
@@ -253,39 +271,41 @@ namespace SocketUtil
         #region 心跳
         public void StartHeartbeat()
         {
-            heartbeatTimer = new System.Timers.Timer();
-            heartbeatTimer.AutoReset = false;
-            heartbeatTimer.Interval = 10000;
-            heartbeatTimer.Elapsed += new System.Timers.ElapsedEventHandler((obj, eea) =>
+            _heartbeatTimer = new System.Timers.Timer();
+            _heartbeatTimer.AutoReset = false;
+            _heartbeatTimer.Interval = 10000;
+            _heartbeatTimer.Elapsed += heartbeatTimer_Elapsed;
+            _heartbeatTimer.Start();
+        }
+
+        private void heartbeatTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            try
             {
-                try
+                byte[] bArr = new byte[5];
+                byte[] bArrHeader = SocketData.HeaderBytes;
+                ByteUtil.CopyTo(bArrHeader, bArr, 0, 0, bArrHeader.Length);
+                bArr[4] = (byte)SocketDataType.心跳;
+                lock (_lockSend)
                 {
-                    byte[] bArr = new byte[5];
-                    byte[] bArrHeader = SocketData.HeaderBytes;
-                    ByteUtil.CopyTo(bArrHeader, bArr, 0, 0, bArrHeader.Length);
-                    bArr[4] = (byte)SocketDataType.心跳;
-                    lock (_lockSend)
-                    {
-                        SocketHelper.Send(clientSocket, bArr);
-                    }
+                    SocketHelper.Send(clientSocket, bArr);
                 }
-                catch (Exception ex)
-                {
-                    LogUtil.Error("向服务器发送心跳包出错：" + ex.Message);
-                }
-                finally
-                {
-                    heartbeatTimer.Start();
-                }
-            });
-            heartbeatTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error("向服务器发送心跳包出错：" + ex.Message);
+            }
+            finally
+            {
+                _heartbeatTimer.Start();
+            }
         }
         #endregion
 
         #region 停止心跳
         public void StopHeartbeat()
         {
-            heartbeatTimer.Stop();
+            _heartbeatTimer.Stop();
         }
         #endregion
 
@@ -457,7 +477,8 @@ namespace SocketUtil
 
                 if (data.Type == SocketDataType.返回值) //收到返回值包
                 {
-                    _callbackDict.TryAdd(data.SocketResult.callbackId, data.SocketResult);
+                    data.SocketResult.CallbackTime = DateTime.Now;
+                    _callbackDict.TryAdd(data.SocketResult.CallbackId, data.SocketResult);
 
                     if (ReceivedSocketResultEvent != null)
                     {
@@ -651,8 +672,8 @@ namespace SocketUtil
                     if (socketResult == null)
                     {
                         socketResult = new SocketResult();
-                        socketResult.success = false;
-                        socketResult.errorMsg = "超时";
+                        socketResult.Success = false;
+                        socketResult.Msg = "超时";
                     }
 
                     if (callback != null) callback(socketResult);
@@ -665,6 +686,34 @@ namespace SocketUtil
                 }
             };
             timer.Start();
+        }
+        #endregion
+
+        #region 清理数据
+        /// <summary>
+        /// 清理数据
+        /// </summary>
+        private void _clearDataTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (_callbackDict.Count > 0)
+            {
+                ThreadHelper.Run(() =>
+                {
+                    SocketResult socketResult;
+                    SocketResult temp;
+
+                    foreach (string key in _callbackDict.Keys.ToArray())
+                    {
+                        if (_callbackDict.TryGetValue(key, out socketResult))
+                        {
+                            if (DateTime.Now.Subtract(socketResult.CallbackTime).TotalSeconds > _CallbackTimeout * 2)
+                            {
+                                _callbackDict.TryRemove(key, out temp);
+                            }
+                        }
+                    }
+                });
+            }
         }
         #endregion
 
