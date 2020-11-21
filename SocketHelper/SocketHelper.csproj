@@ -63,7 +63,9 @@
     <Compile Include="SocketServerHelper.cs" />
     <Compile Include="Utils\ActionUtil.cs" />
     <Compile Include="Utils\ByteUtil.cs" />
+    <Compile Include="Utils\LogTimeUtil.cs" />
     <Compile Include="Utils\LogUtil.cs" />
+    <Compile Include="Utils\RunHelper.cs" />
     <Compile Include="Utils\TaskSchedulerEx.cs" />
     <Compile Include="Utils\ThreadHelper.cs" />
   </ItemGroup>

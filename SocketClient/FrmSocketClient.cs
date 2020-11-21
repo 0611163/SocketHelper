@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -120,25 +121,28 @@ namespace SocketClient
             {
                 try
                 {
-                    MsgContent content = new MsgContent();
-                    content.Content = msg;
-
-                    SocketData data = new SocketData();
-                    data.Type = SocketDataType.消息数据;
-                    data.Content = content;
-
-                    _socketClientHelper.Send(data, (result) =>
+                    for (int i = 0; i < 1; i++)
                     {
-                        if (result.Success)
+                        MsgContent content = new MsgContent();
+                        content.Content = msg;
+
+                        SocketData data = new SocketData();
+                        data.Type = SocketDataType.消息数据;
+                        data.Content = content;
+
+                        _socketClientHelper.Send(data, (result) =>
                         {
-                            Log("收到服务端成功反馈");
-                        }
-                        else
-                        {
-                            Log("收到服务端失败反馈，失败消息：" + result.Msg);
-                        }
-                    });
-                    Log("向服务端发送消息");
+                            if (result.Success)
+                            {
+                                Log("收到服务端成功反馈");
+                            }
+                            else
+                            {
+                                Log("收到服务端失败反馈，失败消息：" + result.Msg);
+                            }
+                        });
+                        Log("向服务端发送消息");
+                    }
                 }
                 catch (Exception ex)
                 {

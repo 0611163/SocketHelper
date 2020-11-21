@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -77,7 +78,7 @@ namespace SocketUtil
             _hostName = hostName;
 
             _clearDataTimer = new System.Timers.Timer();
-            _clearDataTimer.Interval = 60;
+            _clearDataTimer.Interval = 60 * 1000;
             _clearDataTimer.Elapsed += _clearDataTimer_Elapsed;
             _clearDataTimer.Start();
         }

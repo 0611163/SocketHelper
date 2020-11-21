@@ -81,7 +81,7 @@ namespace SocketUtil
             _serverPort = serverPort;
 
             _clearDataTimer = new System.Timers.Timer();
-            _clearDataTimer.Interval = 60;
+            _clearDataTimer.Interval = 60 * 1000;
             _clearDataTimer.Elapsed += _clearDataTimer_Elapsed;
             _clearDataTimer.Start();
         }

@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -111,23 +112,26 @@ namespace SocketServer
                 {
                     try
                     {
-                        string clientId = (string)obj;
-
-                        MsgContent content = new MsgContent();
-                        content.Content = msg;
-
-                        _socketServerHelper.Send(content, clientId, (result) =>
+                        for (int i = 0; i < 1; i++)
                         {
-                            if (result.Success)
+                            string clientId = (string)obj;
+
+                            MsgContent content = new MsgContent();
+                            content.Content = msg;
+
+                            _socketServerHelper.Send(content, clientId, (result) =>
                             {
-                                Log("收到客户端 " + clientId + " 成功反馈");
-                            }
-                            else
-                            {
-                                Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
-                            }
-                        });
-                        Log("向客户端 " + clientId + " 发送消息");
+                                if (result.Success)
+                                {
+                                    Log("收到客户端 " + clientId + " 成功反馈");
+                                }
+                                else
+                                {
+                                    Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
+                                }
+                            });
+                            Log("向客户端 " + clientId + " 发送消息");
+                        }
                     }
                     catch (Exception ex)
                     {
