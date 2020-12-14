@@ -175,7 +175,6 @@ namespace SocketUtil
             try
             {
                 DateTime now = DateTime.Now;
-                string strTemp;
 
                 foreach (ClientSocket clientSkt in clientSocketList.Keys.ToArray())
                 {
@@ -183,32 +182,7 @@ namespace SocketUtil
 
                     if (now.Subtract(clientSkt.LastHeartbeat).TotalSeconds > 15)
                     {
-                        clientSocketList.TryRemove(clientSkt, out strTemp);
-                        if (clientSkt.SocketClientId != null && SocketClientOfflineEvent != null)
-                        {
-                            SocketClientOfflineEventArgs socketClientOfflineEventArgs = new SocketClientOfflineEventArgs(clientSkt.SocketClientId);
-                            ThreadHelper.Run(() =>
-                            {
-                                SocketClientOfflineEvent(null, socketClientOfflineEventArgs);
-                            });
-                        }
-                        LogUtil.Log("客户端已失去连接，当前客户端数：" + clientSocketList.Count);
-                        ActionUtil.TryDoAction(() => { if (skt.Connected) skt.Disconnect(false); });
-                        ActionUtil.TryDoAction(() =>
-                        {
-                            skt.Close();
-                            skt.Dispose();
-                            if (clientSkt.SocketAsyncArgs != null)
-                            {
-                                if (clientSkt.SocketAsyncCompleted != null)
-                                {
-                                    clientSkt.SocketAsyncArgs.Completed -= clientSkt.SocketAsyncCompleted;
-                                }
-                                clientSkt.SocketAsyncArgs.Dispose();
-                            }
-                            clientSkt.SocketAsyncCompleted = null;
-                            clientSkt.SocketAsyncArgs = null;
-                        });
+                        ReleaseClientSocket(clientSkt, skt);
                     }
                 }
 
@@ -221,6 +195,42 @@ namespace SocketUtil
             {
                 _checkClientTimer.Start();
             }
+        }
+
+        /// <summary>
+        /// 释放客户端
+        /// </summary>
+        private void ReleaseClientSocket(ClientSocket clientSkt, Socket skt)
+        {
+            string strTemp;
+            ClientSocket clientSocketTemp;
+            _dictClientIdClientSocket.TryRemove(clientSkt.SocketClientId, out clientSocketTemp);
+            clientSocketList.TryRemove(clientSkt, out strTemp);
+            if (clientSkt.SocketClientId != null && SocketClientOfflineEvent != null)
+            {
+                SocketClientOfflineEventArgs socketClientOfflineEventArgs = new SocketClientOfflineEventArgs(clientSkt.SocketClientId);
+                ThreadHelper.Run(() =>
+                {
+                    SocketClientOfflineEvent(null, socketClientOfflineEventArgs);
+                });
+            }
+            LogUtil.Log("客户端已失去连接，当前客户端数：" + clientSocketList.Count);
+            ActionUtil.TryDoAction(() => { if (skt.Connected) skt.Disconnect(false); });
+            ActionUtil.TryDoAction(() =>
+            {
+                skt.Close();
+                skt.Dispose();
+                if (clientSkt.SocketAsyncArgs != null)
+                {
+                    if (clientSkt.SocketAsyncCompleted != null)
+                    {
+                        clientSkt.SocketAsyncArgs.Completed -= clientSkt.SocketAsyncCompleted;
+                    }
+                    clientSkt.SocketAsyncArgs.Dispose();
+                }
+                clientSkt.SocketAsyncCompleted = null;
+                clientSkt.SocketAsyncArgs = null;
+            });
         }
         #endregion
 
@@ -235,6 +245,11 @@ namespace SocketUtil
 
             try
             {
+                if (e.BytesTransferred == 0)
+                {
+                    ReleaseClientSocket(clientSkt, skt);
+                }
+
                 ByteUtil.CopyTo(e.Buffer, clientSkt.Buffer, 0, e.BytesTransferred);
 
                 #region 校验数据

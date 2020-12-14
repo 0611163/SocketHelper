@@ -182,13 +182,7 @@ namespace SocketUtil
                     LogUtil.Log("服务端已失去连接");
                     try
                     {
-                        if (clientSocket.Connected) clientSocket.Disconnect(false);
-                        clientSocket.Close();
-                        clientSocket.Dispose();
-                        _socketAsyncArgs.Completed -= _socketAsyncCompleted;
-                        _socketAsyncCompleted = null;
-                        _socketAsyncArgs.Dispose();
-                        _socketAsyncArgs = null;
+                        ReleaseServerSocket();
                     }
                     catch (Exception ex)
                     {
@@ -216,6 +210,20 @@ namespace SocketUtil
             {
                 _checkServerTimer.Start();
             }
+        }
+
+        /// <summary>
+        /// 释放Socket服务端
+        /// </summary>
+        private void ReleaseServerSocket()
+        {
+            if (clientSocket.Connected) clientSocket.Disconnect(false);
+            clientSocket.Close();
+            clientSocket.Dispose();
+            _socketAsyncArgs.Completed -= _socketAsyncCompleted;
+            _socketAsyncCompleted = null;
+            _socketAsyncArgs.Dispose();
+            _socketAsyncArgs = null;
         }
         #endregion
 
@@ -341,6 +349,11 @@ namespace SocketUtil
         {
             try
             {
+                if (e.BytesTransferred == 0)
+                {
+                    ReleaseServerSocket();
+                }
+
                 ByteUtil.CopyTo(e.Buffer, _buffer, 0, e.BytesTransferred);
 
                 #region 校验数据
