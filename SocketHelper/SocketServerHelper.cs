@@ -248,6 +248,7 @@ namespace SocketUtil
                 if (e.BytesTransferred == 0)
                 {
                     ReleaseClientSocket(clientSkt, skt);
+                    return;
                 }
 
                 ByteUtil.CopyTo(e.Buffer, clientSkt.Buffer, 0, e.BytesTransferred);

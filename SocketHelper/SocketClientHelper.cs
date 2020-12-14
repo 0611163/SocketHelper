@@ -352,6 +352,7 @@ namespace SocketUtil
                 if (e.BytesTransferred == 0)
                 {
                     ReleaseServerSocket();
+                    return;
                 }
 
                 ByteUtil.CopyTo(e.Buffer, _buffer, 0, e.BytesTransferred);
