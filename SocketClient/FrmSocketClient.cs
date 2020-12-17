@@ -96,6 +96,10 @@ namespace SocketClient
                     {
                         Log("收到服务端消息：" + e.Content.Content);
 
+                        //处理消息
+                        RpcData data = JsonConvert.DeserializeObject<RpcData>(e.Content.Content);
+                        FunctionUtil.RunFunction("SocketClient", data);
+
                         //回调
                         SocketResult result = new SocketResult();
                         result.Success = true;

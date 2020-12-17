@@ -57,6 +57,8 @@
     <Compile Include="FrmSocketClient.Designer.cs">
       <DependentUpon>FrmSocketClient.cs</DependentUpon>
     </Compile>
+    <Compile Include="MyTest.cs" />
+    <Compile Include="MyTest2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmSocketClient.resx">
@@ -86,6 +88,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Contract\Contract.csproj">
+      <Project>{0bdcf9aa-1a0b-4cdf-9ff4-e19842d50ccb}</Project>
+      <Name>Contract</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SocketHelper\SocketHelper.csproj">
       <Project>{98732E63-6A56-47DB-8881-C6B87BB6AB2B}</Project>
       <Name>SocketHelper</Name>

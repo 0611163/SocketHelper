@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Autofac;
+using Contract;
+using Newtonsoft.Json;
 using SocketUtil;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Autofac.Extras.DynamicProxy;
 
 namespace SocketServer
 {
@@ -18,6 +21,7 @@ namespace SocketServer
     {
         private int _serverPort = Convert.ToInt32(ConfigurationManager.AppSettings["ServerPort"]);
         private SocketServerHelper _socketServerHelper;
+        private Autofac.IContainer _container;
 
         public FrmSocketServer()
         {
@@ -28,6 +32,17 @@ namespace SocketServer
         {
             Task.Factory.StartNew(() =>
             {
+                #region 服务注册
+                ContainerBuilder containerBuilder = new ContainerBuilder();
+
+                containerBuilder.RegisterType<MyInterceptor>(); //注册拦截器
+
+                containerBuilder.RegisterInstance<IMyTest>(ProxyFactory.CreateProxy<IMyTest>()).InterceptedBy(typeof(MyInterceptor)).EnableInterfaceInterceptors();
+                containerBuilder.RegisterInstance<IMyTest2>(ProxyFactory.CreateProxy<IMyTest2>()).InterceptedBy(typeof(MyInterceptor)).EnableInterfaceInterceptors();
+
+                _container = containerBuilder.Build();
+                #endregion
+
                 StartSocketServer();
             });
         }
@@ -56,6 +71,7 @@ namespace SocketServer
             Task.Factory.StartNew(() =>
             {
                 _socketServerHelper = new SocketServerHelper(_serverPort);
+                RequestUtil._socketServerHelper = _socketServerHelper;
                 _socketServerHelper.StartServer();
                 _socketServerHelper.SocketReceivedEvent += Received;
                 _socketServerHelper.SocketClientRegisterEvent += ClientRegistered;
@@ -104,41 +120,10 @@ namespace SocketServer
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            string msg = txtMsg.Text;
+            IMyTest myTest = _container.Resolve<IMyTest>();
 
-            foreach (string socketClientId in _socketServerHelper.GetSocketClientIdListAll())
-            {
-                Task.Factory.StartNew((obj) =>
-                {
-                    try
-                    {
-                        for (int i = 0; i < 1; i++)
-                        {
-                            string clientId = (string)obj;
-
-                            MsgContent content = new MsgContent();
-                            content.Content = msg;
-
-                            _socketServerHelper.Send(content, clientId, (result) =>
-                            {
-                                if (result.Success)
-                                {
-                                    Log("收到客户端 " + clientId + " 成功反馈");
-                                }
-                                else
-                                {
-                                    Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
-                                }
-                            });
-                            Log("向客户端 " + clientId + " 发送消息");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log(ex.Message);
-                    }
-                }, socketClientId);
-            }
+            string result1 = myTest.RunMyTest("2", 1);
+            Log("返回值：" + result1);
         }
 
         /// <summary>
@@ -146,34 +131,7 @@ namespace SocketServer
         /// </summary>
         private void btnSendToClient_Click(object sender, EventArgs e)
         {
-            string msg = txtMsg.Text;
-            string clientId = txtClientId.Text;
 
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    MsgContent content = new MsgContent();
-                    content.Content = msg;
-
-                    _socketServerHelper.Send(content, clientId, (result) =>
-                    {
-                        if (result.Success)
-                        {
-                            Log("收到客户端 " + clientId + " 成功反馈");
-                        }
-                        else
-                        {
-                            Log("收到客户端 " + clientId + " 失败反馈，失败消息：" + result.Msg);
-                        }
-                    });
-                    Log("向客户端 " + clientId + " 发送消息");
-                }
-                catch (Exception ex)
-                {
-                    Log(ex.Message);
-                }
-            });
         }
     }
 }

@@ -483,6 +483,38 @@ namespace SocketUtil
                     {
                         SocketReceivedEventArgs args = new SocketReceivedEventArgs(data.Content);
                         args.Callback = new CallbackSocket(socket);
+
+                        #region 处理消息
+                        Task.Factory.StartNew(() =>
+                        {
+                            try
+                            {
+                                //取数据处理
+                                if (data.Content != null)
+                                {
+                                    //处理消息
+                                    RpcData rpcData = JsonConvert.DeserializeObject<RpcData>(data.Content.Content);
+                                    FunctionUtil.RunFunction("SocketClient", rpcData);
+
+                                    //回调
+                                    SocketResult socketResult = new SocketResult();
+                                    socketResult.Success = true;
+                                    socketResult.Msg = "消息已成功收到";
+
+                                    SocketData socketData = new SocketData();
+                                    socketData.Type = SocketDataType.返回值;
+                                    socketData.SocketResult = socketResult;
+                                    socketResult.CallbackId = data.Content.CallbackId;
+                                    Send(clientSocket, data);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogUtil.Error("错误：" + ex.Message);
+                            }
+                        });
+                        #endregion
+
                         ThreadHelper.Run((obj) =>
                         {
                             SocketReceivedEvent(this, obj as SocketReceivedEventArgs);
