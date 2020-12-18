@@ -4,26 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// 契约
+/// </summary>
 namespace Contract
 {
-    /// <summary>
-    /// 动态代理测试接口
-    /// </summary>
     public interface IMyTest
     {
         /// <summary>
-        /// 测试方法
+        /// 计算arg1和arg2的和
         /// </summary>
-        /// <param name="arg1">测试参数1</param>
-        /// <param name="arg2">测试参数2</param>
-        string RunMyTest(string arg1, int arg2);
-
-        /// <summary>
-        /// 测试方法2
-        /// </summary>
-        /// <param name="arg1">测试参数1</param>
-        /// <param name="arg2">测试参数2</param>
-        /// <param name="arg3">测试参数3 out参数</param>
-        string RunMyTest2(string arg1, int arg2, out string arg3);
+        /// <param name="arg1">参数1</param>
+        /// <param name="arg2">参数2</param>
+        void Calc(int arg1, int arg2);
     }
 }

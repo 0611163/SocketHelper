@@ -71,8 +71,8 @@
     <Compile Include="Models\SocketResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxy\ProxyFactory.cs" />
+    <Compile Include="Proxy\ProxyInterceptor.cs" />
     <Compile Include="RPC\FunctionUtil.cs" />
-    <Compile Include="RPC\MyInterceptor.cs" />
     <Compile Include="RPC\RequestUtil.cs" />
     <Compile Include="RPC\RpcData.cs" />
     <Compile Include="RPC\RpcResult.cs" />

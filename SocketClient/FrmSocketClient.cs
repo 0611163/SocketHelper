@@ -94,17 +94,9 @@ namespace SocketClient
                     //取数据处理
                     if (e.Content != null)
                     {
-                        Log("收到服务端消息：" + e.Content.Content);
-
                         //处理消息
                         RpcData data = JsonConvert.DeserializeObject<RpcData>(e.Content.Content);
-                        FunctionUtil.RunFunction("SocketClient", data);
-
-                        //回调
-                        SocketResult result = new SocketResult();
-                        result.Success = true;
-                        result.Msg = "消息已成功收到";
-                        e.Callback.SendResult(_socketClientHelper, result, e);
+                        Log("收到服务端消息：" + data.interfaceName + "." + data.methodName + "(" + string.Join(", ", data.paramValue.ToList().ConvertAll<string>(a => a.ToString())) + ")");
                     }
                 }
                 catch (Exception ex)

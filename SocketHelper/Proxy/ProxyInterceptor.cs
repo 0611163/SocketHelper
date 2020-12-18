@@ -11,8 +11,18 @@ namespace SocketUtil
     /// <summary>
     /// 拦截器
     /// </summary>
-    public class MyInterceptor : IInterceptor
+    public class ProxyInterceptor : IInterceptor
     {
+        private string _serviceName;
+
+        public ProxyInterceptor(string serviceName)
+        {
+            _serviceName = serviceName;
+        }
+
+        /// <summary>
+        /// 拦截方法
+        /// </summary>
         public void Intercept(IInvocation invocation)
         {
             //准备参数
@@ -23,17 +33,14 @@ namespace SocketUtil
                 valArr[i] = invocation.GetArgumentValue(i);
             }
 
-            RpcResult result = RequestUtil.DoRequest(invocation.TargetType.FullName, invocation.Method.Name, parameterInfoArr, valArr);
-
-            //返回结果和out参数
-            invocation.ReturnValue = result.returnValue;
-            for (int i = 0; i < parameterInfoArr.Length; i++)
+            //执行方法
+            try
             {
-                ParameterInfo paramInfo = parameterInfoArr[i];
-                if (paramInfo.IsOut)
-                {
-                    invocation.SetArgumentValue(i, result.paramValue[i]);
-                }
+                RequestUtil.DoRequest(_serviceName, invocation.Method.Name, parameterInfoArr, valArr);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex, "ProxyInterceptor " + _serviceName + " " + invocation.Method.Name + " 异常");
             }
         }
     }

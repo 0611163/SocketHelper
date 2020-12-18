@@ -21,7 +21,7 @@ namespace SocketUtil
         /// <param name="interfaceName">接口名称</param>
         /// <param name="methodName">实现方法名称</param>
         /// <param name="args">实现方法的参数集合</param>
-        public static RpcResult DoRequest(string interfaceName, string methodName, ParameterInfo[] parameterInfoArr, object[] args)
+        public static void DoRequest(string interfaceName, string methodName, ParameterInfo[] parameterInfoArr, object[] args)
         {
             //准备POST数据
             RpcData postData = new RpcData();
@@ -60,23 +60,6 @@ namespace SocketUtil
                     LogUtil.Error(ex);
                 }
             }
-
-            //模拟收到结果
-            RpcResult result = new RpcResult();
-            /*
-            result.returnValue = "操作结果139";
-            result.param = postData.param;
-            result.paramValue = new object[result.param.Length];
-            for (int i = 0; i < result.param.Length; i++)
-            {
-                ParameterInfo paramInfo = result.param[i];
-                if (paramInfo.IsOut)
-                {
-                    result.paramValue[i] = "测试out参数值666";
-                }
-            }*/
-
-            return result;
         }
     }
 }

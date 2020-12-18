@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autofac.Extras.DynamicProxy;
+using System.Diagnostics;
 
 namespace SocketServer
 {
@@ -21,7 +22,7 @@ namespace SocketServer
     {
         private int _serverPort = Convert.ToInt32(ConfigurationManager.AppSettings["ServerPort"]);
         private SocketServerHelper _socketServerHelper;
-        private Autofac.IContainer _container;
+        private Random _rnd = new Random();
 
         public FrmSocketServer()
         {
@@ -32,17 +33,6 @@ namespace SocketServer
         {
             Task.Factory.StartNew(() =>
             {
-                #region 服务注册
-                ContainerBuilder containerBuilder = new ContainerBuilder();
-
-                containerBuilder.RegisterType<MyInterceptor>(); //注册拦截器
-
-                containerBuilder.RegisterInstance<IMyTest>(ProxyFactory.CreateProxy<IMyTest>()).InterceptedBy(typeof(MyInterceptor)).EnableInterfaceInterceptors();
-                containerBuilder.RegisterInstance<IMyTest2>(ProxyFactory.CreateProxy<IMyTest2>()).InterceptedBy(typeof(MyInterceptor)).EnableInterfaceInterceptors();
-
-                _container = containerBuilder.Build();
-                #endregion
-
                 StartSocketServer();
             });
         }
@@ -120,10 +110,23 @@ namespace SocketServer
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            IMyTest myTest = _container.Resolve<IMyTest>();
+            Stopwatch stopwath = new Stopwatch();
+            stopwath.Start();
 
-            string result1 = myTest.RunMyTest("2", 1);
-            Log("返回值：" + result1);
+            //创建代理
+            IMyTest proxy = ProxyFactory.CreateProxy<IMyTest>();
+
+            //调用方法
+            int arg1 = _rnd.Next(1, 10);
+            int arg2 = _rnd.Next(1, 10);
+            proxy.Calc(arg1, arg2);
+
+            double d = stopwath.Elapsed.TotalSeconds;
+            stopwath.Stop();
+            string strTime = " 耗时：" + d.ToString("0.000000000") + " 秒";
+
+            //输出结果
+            Log(string.Format("计算完成{0} + {1} {2}", arg1, arg2, strTime));
         }
 
         /// <summary>
