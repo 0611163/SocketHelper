@@ -16,12 +16,12 @@ namespace SocketUtil
         /// <summary>
         /// 拦截器缓存
         /// </summary>
-        private static ConcurrentDictionary<Type, IInterceptor> _interceptors = new ConcurrentDictionary<Type, IInterceptor>();
+        private static ConcurrentDictionary<string, IInterceptor> _interceptors = new ConcurrentDictionary<string, IInterceptor>();
 
         /// <summary>
         /// 代理对象缓存
         /// </summary>
-        private static ConcurrentDictionary<Type, object> _objs = new ConcurrentDictionary<Type, object>();
+        private static ConcurrentDictionary<string, object> _objs = new ConcurrentDictionary<string, object>();
 
         private static ProxyGenerator _proxyGenerator = new ProxyGenerator();
 
@@ -34,13 +34,13 @@ namespace SocketUtil
         {
             Type interfaceType = typeof(T);
 
-            IInterceptor interceptor = _interceptors.GetOrAdd(interfaceType, type =>
+            IInterceptor interceptor = _interceptors.GetOrAdd(interfaceType.FullName + socketClientId, type =>
             {
                 string serviceName = interfaceType.Name.Substring(1);
                 return new ProxyInterceptor(serviceName, socketClientId);
             });
 
-            return (T)_objs.GetOrAdd(interfaceType, type => _proxyGenerator.CreateInterfaceProxyWithoutTarget(typeof(T), interceptor)); //根据接口类型动态创建代理对象，接口没有实现类
+            return (T)_objs.GetOrAdd(interfaceType.FullName + socketClientId, type => _proxyGenerator.CreateInterfaceProxyWithoutTarget(typeof(T), interceptor)); //根据接口类型动态创建代理对象，接口没有实现类
         }
     }
 }
