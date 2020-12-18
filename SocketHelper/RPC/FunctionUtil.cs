@@ -16,11 +16,8 @@ namespace SocketUtil
         /// <summary>
         /// 执行方法
         /// </summary>
-        public static object RunFunction(string nameSpace, RpcData socketData)
+        public static object RunFunction(Assembly assembly, string nameSpace, RpcData socketData)
         {
-            UriBuilder uri = new UriBuilder(Assembly.GetExecutingAssembly().CodeBase);
-            string assemblyPath = Path.GetDirectoryName(Uri.UnescapeDataString(uri.Path));
-            Assembly assembly = Assembly.LoadFile(Path.Combine(assemblyPath, "SocketClient.exe"));
             Type type = assembly.GetType(nameSpace + "." + socketData.interfaceName);
             MethodInfo methodInfo = type.GetMethod(socketData.methodName);
             ParameterInfo[] parameterInfoArr = methodInfo.GetParameters();

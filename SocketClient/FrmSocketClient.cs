@@ -7,6 +7,7 @@ using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,6 +69,7 @@ namespace SocketClient
                 try
                 {
                     _socketClientHelper = new SocketClientHelper(_serverIP, _serverPort);
+                    _socketClientHelper.Init(Assembly.GetAssembly(this.GetType()));
                     _socketClientHelper.ConnectServer(); //连接服务器
                     _socketClientHelper.StartHeartbeat(); //心跳
                     _socketClientHelper.RegisterToServer(string.IsNullOrWhiteSpace(txtSocketClientId.Text) ? DateTime.Now.ToString("dHHmmssf") : txtSocketClientId.Text); //注册
@@ -87,22 +89,18 @@ namespace SocketClient
         /// </summary>
         private void Received(object sender, SocketReceivedEventArgs e)
         {
-            Task.Factory.StartNew(() =>
+            ThreadHelper.Run(() =>
             {
-                try
+                //取数据处理
+                if (e.Content != null)
                 {
-                    //取数据处理
-                    if (e.Content != null)
-                    {
-                        //处理消息
-                        RpcData data = JsonConvert.DeserializeObject<RpcData>(e.Content.Content);
-                        Log("收到服务端消息：" + data.interfaceName + "." + data.methodName + "(" + string.Join(", ", data.paramValue.ToList().ConvertAll<string>(a => a.ToString())) + ")");
-                    }
+                    //处理消息
+                    RpcData data = JsonConvert.DeserializeObject<RpcData>(e.Content.Content);
+                    Log("收到服务端消息：" + data.interfaceName + "." + data.methodName + "(" + string.Join(", ", data.paramValue.ToList().ConvertAll<string>(a => a.ToString())) + ")");
                 }
-                catch (Exception ex)
-                {
-                    Log("错误：" + ex.Message);
-                }
+            }, (ex) =>
+            {
+                Log("错误：" + ex.Message);
             });
         }
 
@@ -111,40 +109,7 @@ namespace SocketClient
         /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            string msg = txtMsg.Text;
-
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    for (int i = 0; i < 1; i++)
-                    {
-                        MsgContent content = new MsgContent();
-                        content.Content = msg;
-
-                        SocketData data = new SocketData();
-                        data.Type = SocketDataType.消息数据;
-                        data.Content = content;
-
-                        _socketClientHelper.Send(data, (result) =>
-                        {
-                            if (result.Success)
-                            {
-                                Log("收到服务端成功反馈");
-                            }
-                            else
-                            {
-                                Log("收到服务端失败反馈，失败消息：" + result.Msg);
-                            }
-                        });
-                        Log("向服务端发送消息");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log(ex.Message);
-                }
-            });
+            Log("未实现");
         }
 
     }

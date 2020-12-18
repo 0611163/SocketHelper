@@ -15,9 +15,12 @@ namespace SocketUtil
     {
         private string _serviceName;
 
-        public ProxyInterceptor(string serviceName)
+        private string _socketClientId;
+
+        public ProxyInterceptor(string serviceName, string socketClientId)
         {
             _serviceName = serviceName;
+            _socketClientId = socketClientId;
         }
 
         /// <summary>
@@ -36,7 +39,7 @@ namespace SocketUtil
             //执行方法
             try
             {
-                RequestUtil.DoRequest(_serviceName, invocation.Method.Name, parameterInfoArr, valArr);
+                RequestUtil.DoRequest(_socketClientId, _serviceName, invocation.Method.Name, parameterInfoArr, valArr);
             }
             catch (Exception ex)
             {

@@ -29,13 +29,15 @@ namespace SocketUtil
         /// 动态创建代理
         /// </summary>
         /// <typeparam name="T">接口</typeparam>
-        public static T CreateProxy<T>()
+        /// <param name="socketClientId">Socket客户端ID</param>
+        public static T CreateProxy<T>(string socketClientId = null)
         {
             Type interfaceType = typeof(T);
 
             IInterceptor interceptor = _interceptors.GetOrAdd(interfaceType, type =>
             {
-                return new ProxyInterceptor(interfaceType.Name.Substring(1));
+                string serviceName = interfaceType.Name.Substring(1);
+                return new ProxyInterceptor(serviceName, socketClientId);
             });
 
             return (T)_objs.GetOrAdd(interfaceType, type => _proxyGenerator.CreateInterfaceProxyWithoutTarget(typeof(T), interceptor)); //根据接口类型动态创建代理对象，接口没有实现类
