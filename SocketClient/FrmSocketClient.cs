@@ -69,7 +69,7 @@ namespace SocketClient
                 try
                 {
                     _socketClientHelper = new SocketClientHelper(_serverIP, _serverPort);
-                    _socketClientHelper.Init(Assembly.GetAssembly(this.GetType()));
+                    _socketClientHelper.Init(Assembly.GetAssembly(this.GetType()), "SocketClient");
                     _socketClientHelper.ConnectServer(); //连接服务器
                     _socketClientHelper.StartHeartbeat(); //心跳
                     _socketClientHelper.RegisterToServer(string.IsNullOrWhiteSpace(txtSocketClientId.Text) ? DateTime.Now.ToString("dHHmmssf") : txtSocketClientId.Text); //注册

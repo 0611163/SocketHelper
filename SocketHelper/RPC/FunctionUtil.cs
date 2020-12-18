@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace SocketUtil
     /// </summary>
     public class FunctionUtil
     {
+        private static ConcurrentDictionary<Type, object> _objs = new ConcurrentDictionary<Type, object>();
+
         /// <summary>
         /// 执行方法
         /// </summary>
@@ -24,16 +27,10 @@ namespace SocketUtil
             for (int i = 0; i < parameterInfoArr.Length; i++)
             {
                 ParameterInfo paramInfo = parameterInfoArr[i];
-                if (paramInfo.ParameterType == typeof(int))
-                {
-                    socketData.paramValue[i] = Convert.ToInt32(socketData.paramValue[i]);
-                }
-                if (paramInfo.ParameterType == typeof(long))
-                {
-                    socketData.paramValue[i] = Convert.ToInt64(socketData.paramValue[i]);
-                }
+                HandleParam(paramInfo, ref socketData, i);
             }
-            object result = methodInfo.Invoke(Activator.CreateInstance(type), socketData.paramValue);
+            var instance = _objs.GetOrAdd(type, t => Activator.CreateInstance(t));
+            object result = methodInfo.Invoke(instance, socketData.paramValue);
             RpcResult rpcResult = new RpcResult();
             rpcResult.returnValue = result;
             rpcResult.paramValue = new object[socketData.param.Length];
@@ -51,6 +48,30 @@ namespace SocketUtil
                 }
             }
             return result;
+        }
+
+        private static void HandleParam(ParameterInfo paramInfo, ref RpcData socketData, int i)
+        {
+            if (paramInfo.ParameterType == typeof(int))
+            {
+                socketData.paramValue[i] = Convert.ToInt32(socketData.paramValue[i]);
+            }
+            if (paramInfo.ParameterType == typeof(long))
+            {
+                socketData.paramValue[i] = Convert.ToInt64(socketData.paramValue[i]);
+            }
+            if (paramInfo.ParameterType == typeof(float))
+            {
+                socketData.paramValue[i] = (float)socketData.paramValue[i];
+            }
+            if (paramInfo.ParameterType == typeof(double))
+            {
+                socketData.paramValue[i] = Convert.ToDouble(socketData.paramValue[i]);
+            }
+            if (paramInfo.ParameterType == typeof(decimal))
+            {
+                socketData.paramValue[i] = Convert.ToDecimal(socketData.paramValue[i]);
+            }
         }
     }
 }

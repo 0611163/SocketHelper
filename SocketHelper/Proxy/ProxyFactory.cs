@@ -40,7 +40,7 @@ namespace SocketUtil
                 return new ProxyInterceptor(serviceName, socketClientId);
             });
 
-            return (T)_objs.GetOrAdd(interfaceType.FullName + socketClientId, type => _proxyGenerator.CreateInterfaceProxyWithoutTarget(typeof(T), interceptor)); //根据接口类型动态创建代理对象，接口没有实现类
+            return (T)_objs.GetOrAdd(interfaceType.FullName + socketClientId, type => _proxyGenerator.CreateInterfaceProxyWithoutTarget(interfaceType, interceptor)); //根据接口类型动态创建代理对象，接口没有实现类
         }
     }
 }

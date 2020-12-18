@@ -74,6 +74,12 @@ namespace SocketUtil
         /// </summary>
         private Assembly _serviceAssembly;
 
+
+        /// <summary>
+        /// 服务命令空间
+        /// </summary>
+        private string _serviceNamespace;
+
         #endregion
 
         #region SocketClientHelper 构造函数
@@ -94,9 +100,12 @@ namespace SocketUtil
         /// <summary>
         /// 初始化
         /// </summary>
-        public void Init(Assembly serviceAssembly)
+        /// <param name="serviceAssembly">服务Assembly</param>
+        /// <param name="serviceNamespace">服务命令空间</param>
+        public void Init(Assembly serviceAssembly, string serviceNamespace)
         {
             _serviceAssembly = serviceAssembly;
+            _serviceNamespace = serviceNamespace;
         }
         #endregion
 
@@ -508,7 +517,7 @@ namespace SocketUtil
                             {
                                 //处理消息
                                 RpcData rpcData = JsonConvert.DeserializeObject<RpcData>(data.Content.Content);
-                                FunctionUtil.RunFunction(_serviceAssembly, "SocketClient", rpcData);
+                                FunctionUtil.RunFunction(_serviceAssembly, _serviceNamespace, rpcData);
 
                                 //回调
                                 SocketResult socketResult = new SocketResult();
