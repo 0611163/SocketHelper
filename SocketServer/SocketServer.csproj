@@ -69,8 +69,6 @@
     <Compile Include="FrmSocketServer.Designer.cs">
       <DependentUpon>FrmSocketServer.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyTest.cs" />
-    <Compile Include="MyTest2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FrmSocketServer.resx">
