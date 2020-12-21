@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,5 +18,7 @@ namespace Contract
         /// <param name="arg1">参数1</param>
         /// <param name="arg2">参数2</param>
         void Calc(int arg1, int arg2);
+
+        List<TestModel> GetList(List<TestModel> oldList);
     }
 }

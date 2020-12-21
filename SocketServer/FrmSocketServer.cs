@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autofac.Extras.DynamicProxy;
 using System.Diagnostics;
+using Model;
 
 namespace SocketServer
 {
@@ -115,6 +116,31 @@ namespace SocketServer
             int arg1 = _rnd.Next(1, 10);
             int arg2 = _rnd.Next(1, 10);
             proxy.Calc(arg1, arg2);
+
+            double d = stopwath.Elapsed.TotalSeconds;
+            stopwath.Stop();
+            string strTime = " 耗时：" + d.ToString("0.000000000") + " 秒";
+
+            //输出结果
+            Log(string.Format("调用完成，耗时：{0} 秒", strTime));
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Stopwatch stopwath = new Stopwatch();
+            stopwath.Start();
+
+            //创建代理
+            IMyTest proxy = ProxyFactory.CreateProxy<IMyTest>();
+
+            //调用方法
+            List<TestModel> oldList = new List<TestModel>();
+            TestModel old = new TestModel();
+            old.Name = "旧记录";
+            old.Count = 88;
+            old.Total = (decimal)65.9;
+            oldList.Add(old);
+            List<TestModel> newList = proxy.GetList(oldList);
 
             double d = stopwath.Elapsed.TotalSeconds;
             stopwath.Stop();

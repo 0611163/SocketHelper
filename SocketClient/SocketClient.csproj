@@ -91,6 +91,10 @@
       <Project>{0bdcf9aa-1a0b-4cdf-9ff4-e19842d50ccb}</Project>
       <Name>Contract</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{0674f80d-4f19-4144-a689-e411d59e729c}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SocketHelper\SocketHelper.csproj">
       <Project>{98732E63-6A56-47DB-8881-C6B87BB6AB2B}</Project>
       <Name>SocketHelper</Name>

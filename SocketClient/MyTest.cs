@@ -1,4 +1,5 @@
 ﻿using Contract;
+using Model;
 using SocketUtil;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,16 @@ namespace SocketClient
         {
             int result = arg1 + arg2;
             LogUtil.Debug(string.Format("{0} + {1} = {2}", arg1, arg2, result));
+        }
+
+        public List<TestModel> GetList(List<TestModel> oldList)
+        {
+            TestModel model = new TestModel();
+            model.Name = "新记录";
+            model.Count = 9;
+            model.Total = (decimal)12.3;
+            oldList.Add(model);
+            return oldList;
         }
     }
 }

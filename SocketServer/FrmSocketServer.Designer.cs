@@ -35,6 +35,7 @@
             this.btnSendToClient = new System.Windows.Forms.Button();
             this.txtClientId = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -99,11 +100,22 @@
             this.label2.TabIndex = 9;
             this.label2.Text = "客户端ID";
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(14, 209);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(98, 23);
+            this.button2.TabIndex = 10;
+            this.button2.Text = "广播消息";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // FrmSocketServer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(613, 532);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtClientId);
             this.Controls.Add(this.btnSendToClient);
@@ -129,6 +141,7 @@
         private System.Windows.Forms.Button btnSendToClient;
         private System.Windows.Forms.TextBox txtClientId;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button button2;
     }
 }
 
