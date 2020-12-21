@@ -1,5 +1,6 @@
 ﻿using Contract;
 using Model;
+using Newtonsoft.Json;
 using SocketUtil;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,8 @@ namespace SocketClient
 
         public List<TestModel> GetList(List<TestModel> oldList)
         {
+            LogUtil.Debug("处理数据：" + JsonConvert.SerializeObject(oldList));
+
             TestModel model = new TestModel();
             model.Name = "新记录";
             model.Count = 9;
