@@ -136,11 +136,11 @@ namespace SocketServer
             //调用方法
             List<TestModel> oldList = new List<TestModel>();
             TestModel old = new TestModel();
-            old.Name = "旧记录";
+            old.Name = "数据";
             old.Count = 88;
             old.Total = (decimal)65.9;
             oldList.Add(old);
-            List<TestModel> newList = proxy.GetList(oldList);
+            proxy.GetList(oldList);
 
             double d = stopwath.Elapsed.TotalSeconds;
             stopwath.Stop();
